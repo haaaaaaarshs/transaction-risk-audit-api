@@ -62,13 +62,115 @@ Low Risk → Approved → Settled
 
 High Risk → Flagged → Admin Review → Approved or Rejected
 
+## Planned Database Design
+
+The initial database will use five main models: `User`, `Account`, `Transaction`, `RiskAssessment`, and `AuditLog`.
+
+### User
+
+Represents a person who can own accounts or review flagged transactions.
+
+Planned fields:
+
+- `id` — unique identifier
+- `name` — user's name
+- `email` — unique email address
+- `role` — `CUSTOMER` or `ADMIN`
+- `createdAt`
+- `updatedAt`
+
+A user can own multiple accounts.
+
+### Account
+
+Represents an account that can send or receive transactions.
+
+Planned fields:
+
+- `id` — unique identifier
+- `userId` — owner of the account
+- `accountNumber` — unique account number
+- `type` — `CHECKING` or `SAVINGS`
+- `balance`
+- `currency`
+- `createdAt`
+- `updatedAt`
+
+Each account belongs to one user. An account can send and receive many transactions.
+
+### Transaction
+
+Represents a transfer between two accounts.
+
+Planned fields:
+
+- `id` — unique identifier
+- `senderAccountId`
+- `receiverAccountId`
+- `amount`
+- `currency`
+- `memo` — optional transaction description
+- `status`
+- `createdAt`
+- `updatedAt`
+- `settledAt` — optional timestamp
+
+Planned transaction statuses:
+
+- `PENDING`
+- `APPROVED`
+- `FLAGGED`
+- `REJECTED`
+- `SETTLED`
+
+A transaction has one sender account, one receiver account, and one risk assessment.
+
+### RiskAssessment
+
+Stores the result of the automated risk check for a transaction.
+
+Planned fields:
+
+- `id` — unique identifier
+- `transactionId`
+- `score` — numerical risk score
+- `level` — `LOW`, `MEDIUM`, or `HIGH`
+- `reasons` — explanations for why risk points were added
+- `createdAt`
+
+Each transaction will have one risk assessment.
+
+### AuditLog
+
+Records important actions and state changes in the system.
+
+Planned fields:
+
+- `id` — unique identifier
+- `transactionId` — optional related transaction
+- `actorUserId` — optional user responsible for the action
+- `action`
+- `details`
+- `createdAt`
+
+Audit logs will record events such as transaction creation, risk assessment, flagging, approval, rejection, settlement, and balance updates.
+
+### Model Relationships
+
+- One `User` can own many `Account` records.
+- One `Account` can send many `Transaction` records.
+- One `Account` can receive many `Transaction` records.
+- One `Transaction` has one `RiskAssessment`.
+- One `Transaction` can have many `AuditLog` records.
+- One admin `User` can be associated with multiple review actions.
+
 ## Development Progress
 
 ### Phase 1 — Planning
 - [x] Defined project purpose
 - [x] Selected initial tech stack
 - [x] Defined core features
-- [ ] Design database schema
+- [x] Design database schema
 - [ ] Define API endpoints
 
 ### Phase 2 — Project Setup
@@ -100,3 +202,11 @@ High Risk → Flagged → Admin Review → Approved or Rejected
 I started this project to turn concepts from my Forage simulations into a backend system that I designed and built myself.
 
 Before writing code, I am defining the project's scope, data model, and transaction workflow so that the implementation has a clear structure instead of growing feature by feature without a plan.
+
+### Database Planning
+
+I decided to separate the system into five main models: User, Account, Transaction, RiskAssessment, and AuditLog.
+
+The main design decision I considered was whether risk information should be stored directly on each transaction or in its own model. I chose a separate RiskAssessment model because the transaction should represent the transfer itself, while the risk assessment represents an analysis performed on that transaction.
+
+I also decided to keep audit logs separate from transactions so that multiple events can be recorded throughout a transaction's lifecycle instead of storing only its current state.
