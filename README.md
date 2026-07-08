@@ -164,6 +164,76 @@ Audit logs will record events such as transaction creation, risk assessment, fla
 - One `Transaction` can have many `AuditLog` records.
 - One admin `User` can be associated with multiple review actions.
 
+## Planned API Endpoints
+
+The API will be organized around users, accounts, transactions, admin review, and audit logs.
+
+### Users
+
+#### `POST /api/users`
+
+Create a new user.
+
+#### `GET /api/users/:id`
+
+Retrieve a user and their basic account information.
+
+### Accounts
+
+#### `POST /api/accounts`
+
+Create an account for an existing user.
+
+#### `GET /api/accounts/:id`
+
+Retrieve account details.
+
+#### `GET /api/users/:userId/accounts`
+
+Retrieve all accounts owned by a user.
+
+### Transactions
+
+#### `POST /api/transactions`
+
+Create a transfer between two accounts.
+
+Creating a transaction will also trigger the automated risk assessment process.
+
+#### `GET /api/transactions/:id`
+
+Retrieve a transaction along with its status and risk assessment.
+
+#### `GET /api/accounts/:accountId/transactions`
+
+Retrieve transactions sent or received by an account.
+
+### Admin Review
+
+#### `GET /api/admin/transactions/flagged`
+
+Retrieve transactions waiting for manual review.
+
+#### `PATCH /api/admin/transactions/:id/approve`
+
+Approve a flagged transaction.
+
+#### `PATCH /api/admin/transactions/:id/reject`
+
+Reject a flagged transaction.
+
+### Audit Logs
+
+#### `GET /api/transactions/:id/audit-logs`
+
+Retrieve the recorded history of a transaction.
+
+### Health Check
+
+#### `GET /api/health`
+
+Confirm that the API server is running.
+
 ## Development Progress
 
 ### Phase 1 — Planning
@@ -171,7 +241,7 @@ Audit logs will record events such as transaction creation, risk assessment, fla
 - [x] Selected initial tech stack
 - [x] Defined core features
 - [x] Design database schema
-- [ ] Define API endpoints
+- [x] Define API endpoints
 
 ### Phase 2 — Project Setup
 - [ ] Initialize Node.js and TypeScript project
@@ -210,3 +280,11 @@ I decided to separate the system into five main models: User, Account, Transacti
 The main design decision I considered was whether risk information should be stored directly on each transaction or in its own model. I chose a separate RiskAssessment model because the transaction should represent the transfer itself, while the risk assessment represents an analysis performed on that transaction.
 
 I also decided to keep audit logs separate from transactions so that multiple events can be recorded throughout a transaction's lifecycle instead of storing only its current state.
+
+### API Planning
+
+After defining the database models, I planned the initial API routes around the main actions the system needs to support.
+
+I separated normal transaction activity from admin review endpoints because approving or rejecting flagged transactions represents a different level of access and responsibility.
+
+I also included an endpoint for viewing a transaction's audit history so that the system can show not only the transaction's current status, but also the sequence of events that led to it.
